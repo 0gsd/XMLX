@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.72 (2025-12-19)
+- Key rotations
+
 ## v4.71 (2025-12-19)
 - Soundfont fix for 15010
 
