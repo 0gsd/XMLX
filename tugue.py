@@ -10,7 +10,9 @@ import sys
 from pydub import AudioSegment
 
 # --- Configuration ---
-API_KEY = "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc"
+# --- Configuration ---
+# Fix v4.77: Prefer Environment Variable
+API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc")
 
 def normalize_midi_timestamps(input_path, output_path):
     """

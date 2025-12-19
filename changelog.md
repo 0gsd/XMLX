@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.77 (2025-12-19)
+- Fixed hardcoded expired API keys in CMCMT and Tugue
+
 ## v4.76 (2025-12-19)
 - Fixed XMIOX output logging for silent fallback
 

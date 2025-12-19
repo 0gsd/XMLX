@@ -10,7 +10,8 @@ import sys
 from pydub import AudioSegment
 
 # --- Configuration ---
-API_KEY = "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc"
+# Fix v4.77: Prefer Environment Variable, Fallback to (Likely Expired) Hardcoded
+API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc")
 
 def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
     """
