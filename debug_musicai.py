@@ -1,9 +1,9 @@
 import musicai_sdk
-import json
-import sys
+import os
 
-# API Key from ref/musicai.md
-API_KEY = "0b8c5b07-182e-4e47-a97d-34d023203a91"
+# --- Secure Config ---
+# NEVER commit API keys to git. Use os.environ.
+API_KEY = os.environ.get("MUSICAI_API_KEY") or "MISSING_KEY"
 
 def list_workflows():
     print(f"--- Authenticating with Music.AI ---", flush=True)

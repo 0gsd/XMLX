@@ -10,7 +10,8 @@ import random
 import p20convolver
 
 # --- Configuration ---
-API_KEY = "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc"
+# Gemini API Key (Secure Load)
+API_KEY = os.environ.get("GEMINI_API_KEY")
 SOUNDFONT_NAME = "GeneralUser-GS.sf2"
 CMC_CORE_DIR = os.path.join(os.path.dirname(__file__), "cmc_core")
 

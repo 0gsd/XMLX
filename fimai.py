@@ -20,8 +20,9 @@ import musicai_sdk
 import xmlx
 from fina1 import normalize_lufs
 
-# --- CONFIG ---
-API_KEY = "0b8c5b07-182e-4e47-a97d-34d023203a91"
+# --- Config ---
+# 1. API KEY (Now loaded from ENV for security)
+API_KEY = os.environ.get("MUSICAI_API_KEY")
 # Workflow Slugs (User Updated)
 WF_SLUG_SEP = "1in-6stems"
 WF_SLUG_MIX = "6in-1wav"

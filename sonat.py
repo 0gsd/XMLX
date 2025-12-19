@@ -9,8 +9,9 @@ import random
 import p20convolver
 from pydub import AudioSegment
 
-# --- Configuration ---
-API_KEY = "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc"
+# --- Config ---
+# Gemini API Key (Secure Load)
+API_KEY = os.environ.get("GEMINI_API_KEY")
 
 def pipeline_sonata(prompt, output_wav_path, soundfont_path):
     """

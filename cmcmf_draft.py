@@ -13,7 +13,8 @@ except ImportError:
 import p20convolver
 
 # --- Configuration ---
-API_KEY = "AIzaSyCxRLtFM_ssb2rt19hxjoj58SDkF4Qdvdc" # Hardcoded as requested
+# Gemini API Key (Secure Load)
+API_KEY = os.environ.get("GEMINI_API_KEY")
 SOUNDFONT_NAME = "GeneralUser-GS.sf2"
 
 def pipeline_cmcmf(prompt, instrument_id, output_xml_path, soundfont_path):

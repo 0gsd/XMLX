@@ -1,8 +1,10 @@
 import musicai_sdk
 import sys
 import json
+import os
 
-API_KEY = "0b8c5b07-182e-4e47-a97d-34d023203a91"
+# --- Config ---
+API_KEY = os.environ.get("MUSICAI_API_KEY")
 JOB_ID = "12b2d092-0089-4743-a3d7-b955c5143834" # Failed Drumscribe job (kwargs)
 
 def inspect_job():
