@@ -142,11 +142,9 @@ def pipeline_sonata(prompt, output_wav_path, soundfont_path):
             return False
 
         # 1. Gather Parts
-        parts = [f for f in os.listdir(run_dir) if f.startswith('Part_') and f.endswith('.mid')]
-        def get_part_num(name):
-            try: return int(name.split('_')[1].split('.')[0])
-            except: return 999
-        parts.sort(key=get_part_num)
+        # Fix v4.79: Robust detection for 'A_Part...' vs 'Part_1...'
+        parts = [f for f in os.listdir(run_dir) if '_Part_' in f and f.endswith('.mid') and not f.startswith('Final')]
+        parts.sort() # Alphabetical is safest for A-Z part names
 
         if not parts:
             print("   [!] No parts found to stitch!", flush=True)

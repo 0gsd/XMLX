@@ -155,17 +155,22 @@ def pipeline_tugue(prompt, output_wav_path, soundfont_path):
     candidates = [f for f in os.listdir(run_dir) if f.endswith(".mid")]
     
     # If CMC made a 'Final', use it
-    final_candidates = [f for f in candidates if f.lower().startswith('final')]
-    if final_candidates:
-        final_midi_path = os.path.join(run_dir, final_candidates[0])
-        print(f"   [TUGUE] Found Combined MIDI: {final_midi_path}", flush=True)
-    else:
+    # Fix v4.79: Ignore flawed 'Final' (Gap Bug) and force robust manual stitching
+    # final_candidates = [f for f in candidates if f.lower().startswith('final')]
+    # if final_candidates:
+    #     final_midi_path = os.path.join(run_dir, final_candidates[0])
+    #     print(f"   [TUGUE] Found Combined MIDI: {final_midi_path}", flush=True)
+    # else:
+    
+    if True: # Force Stitch
         # Stitch
         final_midi_path = os.path.join(output_dir, f"{base_name}_stitched.mid")
         
         try:
             from mido import MidiFile, MidiTrack
-            parts = sorted([f for f in candidates if not f.lower().startswith('combined')])
+            # Fix v4.79: Robust detection for 'A_Part...' vs 'Part_1...'
+            parts = [f for f in os.listdir(run_dir) if '_Part_' in f and f.endswith('.mid') and not f.startswith('Final')]
+            parts.sort()
             if not parts:
                 raise Exception("No MIDI parts found!")
                 

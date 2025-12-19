@@ -657,3 +657,9 @@
 **Goal**: Fix persistent "API Key Expired" (HTTP 400) errors in CMCMT and Tugue.
 - **Issue**: Despite the user providing a valid `GEMINI_API_KEY` in `env_vars_pro.yaml`, `cmcmt.py` and `tugue.py` were ignoring it because they contained an **Old Hardcoded API Key** from previous development versions.
 - **Fix**: Patched both scripts to strictly use `os.environ.get("GEMINI_API_KEY")`, ensuring the deployed environment variable is respected.
+
+## Dec 19: v4.78 (CMCMT Stitching Patch)
+**Goal**: Solve "Stubborn Silent Sections" in CMCMT output.
+- **Diagnosis**: `cmcmt.py` log showed "[!] No parts found to stitch!", forcing it to use the fallback "Final" MIDI (which contained the original silence/gap bug).
+- **Cause**: The stitcher looked for files starting with `Part_`. But `cmcmt` (Structured Mode) generates files named `A_Part_Theme_A...`.
+- **Fix**: Updated `stitch_midis_compact` to find files with `_Part_` and sort them alphabetically (A->I), forcing the correct stitching algorithm to run.

@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.79 (2025-12-19)
+- Fixed stitching regex and forced manual stitch for Tugue
+
 ## v4.78 (2025-12-19)
 - Fixed CMCMT stitching part detection to match A_Part naming
 
