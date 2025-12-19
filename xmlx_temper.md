@@ -663,3 +663,9 @@
 - **Diagnosis**: `cmcmt.py` log showed "[!] No parts found to stitch!", forcing it to use the fallback "Final" MIDI (which contained the original silence/gap bug).
 - **Cause**: The stitcher looked for files starting with `Part_`. But `cmcmt` (Structured Mode) generates files named `A_Part_Theme_A...`.
 - **Fix**: Updated `stitch_midis_compact` to find files with `_Part_` and sort them alphabetically (A->I), forcing the correct stitching algorithm to run.
+
+## Dec 19: v4.79 (Omni Stitching Fix)
+**Goal**: Proactive hardening of Sonat and Tugue against the "Stitching Gap" bug.
+- **Tugue**: Found to be using the flawed "Final" MIDI (Standard Stitch) by default, and its manual stitcher had the wrong regex.
+- **Fix**: Updated `tugue.py` to **ignore** the Final MIDI and force manual stitching with correct `_Part_` detection. This guarantees gapless output.
+- **Sonat**: Updated regex to robustness against `A_Part` naming, ensuring it doesn't break if labeling changes.

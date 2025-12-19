@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.80 (2025-12-19)
+- Optimized CMCMT structure (5-part Rondo) and Polyphony prompts
+
 ## v4.79 (2025-12-19)
 - Fixed stitching regex and forced manual stitch for Tugue
 

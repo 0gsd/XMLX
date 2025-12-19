@@ -48,13 +48,14 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
     
     # Define Themes (A, B, C)
     themes_map = {
-        "A": {"label": "Theme A", "role": "Main", "description": f"Primary theme. Energetic and distinct. Prompt: {prompt}"},
-        "B": {"label": "Theme B", "role": "Bridge", "description": "Contrasting theme. Slower, more melodic and expressive."},
-        "C": {"label": "Theme C", "role": "Climax", "description": "Intense variation. Complex rhythm and higher dynamics."}
+        "A": {"label": "Theme A", "role": "Main", "description": f"Primary theme. Energetic and distinct. Rich polyphonic piano texture with chords and melody. Prompt: {prompt}"},
+        "B": {"label": "Theme B", "role": "Bridge", "description": "Contrasting theme. Slower, melodic and expressive. Use full dynamic range and harmony."},
+        "C": {"label": "Theme C", "role": "Climax", "description": "Intense variation. Complex rhythm, arpeggios, and dense chords."}
     }
     
-    # Pattern: 1-2-1-2-3-2-2-3-1  -> A-B-A-B-C-B-B-C-A
-    pattern = ["A", "B", "A", "B", "C", "B", "B", "C", "A"]
+    # Pattern: Reduced to 5 parts for reliability (A-B-A-C-A) to avoid timeouts
+    # 5 parts * 8 bars = 40 bars (~1m 20s). 
+    pattern = ["A", "B", "A", "C", "A"]
     
     theme_defs = []
     for idx, key in enumerate(pattern):
@@ -63,7 +64,7 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
             "label": f"{base['label']} (Var {idx+1})",
             "role": base['role'],
             "description": f"{base['description']} Variation {idx+1}.",
-            "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]
+            "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Grand Piano"}]
         })
 
     song_settings = {
