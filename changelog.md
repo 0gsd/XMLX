@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.76 (2025-12-19)
+- Fixed XMIOX output logging for silent fallback
+
 ## v4.75 (2025-12-19)
 - Refactored CMCMT to 9-part structure and fixed silence
 

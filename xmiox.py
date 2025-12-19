@@ -677,8 +677,12 @@ def pipeline_xmiox(input_wav, soundfont_path, output_wav):
         except: pass
         print(f"[OUTPUT] Mirror Mix|{output_wav}", flush=True)
     else:
-        # Fallback
+        # Fallback (Synthesis failed for all stems)
+        print("   [!] Synthesis failed. Generating Silent Fallback.", flush=True)
         AudioSegment.silent(duration=1000).export(output_wav, format="wav")
+        try: os.chmod(output_wav, 0o644)
+        except: pass
+        print(f"[OUTPUT] Mirror Mix|{output_wav}", flush=True)
 
     # 6. XML Generation
     print(f"\n[6/6] Generating XML...", flush=True)
