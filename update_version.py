@@ -122,6 +122,55 @@ def update_version(new_version, changelog_msg=None):
             f.write(final_cl)
         print(f"Updated {cl_path}")
     
+    # 5. Git Sync (Automated)
+    print("\n[Git] Preparing to sync...")
+    
+    # helper to run command
+    def run_cmd(cmd_list):
+        import subprocess
+        try:
+            subprocess.run(cmd_list, check=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Command failed: {e}")
+            return False
+
+    # Extract PAT from environment variable (SAFER)
+    pat = os.environ.get("GITHUB_PAT")
+    
+    if not pat:
+        # Fallback to file ONLY if not in env, but warn user or check logic
+        # Ideally we just rely on env var to prevent accidental commits.
+        pass
+
+                            
+    # Git Add
+    run_cmd(["git", "add", "."])
+    
+    # Git Commit
+    commit_msg = f"Bump version to v{new_version}"
+    if changelog_msg:
+        commit_msg += f" - {changelog_msg}"
+        
+    run_cmd(["git", "commit", "-m", commit_msg])
+    
+    # Git Push
+    if pat:
+        print("[Git] Using PAT for authentication...")
+        # Construct URL: https://PAT@github.com/0gsd/XMLX.git
+        # Assumption: Origin is HTTPS. If SSH, this might break or be ignored.
+        # Let's check remote url first? 
+        # Simpler: just try running git push. If it fails, maybe try with PAT?
+        # But user explicitly asked to use the PAT.
+        # We can pass it via header or just modify the remote url temporarily?
+        # Safest: Use the PAT in the URL.
+        remote_url = "https://github.com/0gsd/XMLX.git" # Hardcoding based on known repo
+        auth_url = remote_url.replace("https://", f"https://{pat}@")
+        run_cmd(["git", "push", auth_url, "main"])
+    else:
+        print("[Git] No PAT found in env_vars_pro.yaml. Attempting standard push...")
+        run_cmd(["git", "push"])
+        
     print("Done!")
 
 if __name__ == "__main__":

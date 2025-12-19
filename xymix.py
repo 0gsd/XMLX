@@ -57,6 +57,31 @@ print(f"DEBUG: Using Device: {device}", flush=True)
 
 # --- Transcription Helpers ---
 
+def set_midi_program(midi_path, program_number):
+    """
+    Sets the MIDI program (instrument) for all tracks in a MIDI file.
+    """
+    if not os.path.exists(midi_path): return
+    
+    try:
+        mid = mido.MidiFile(midi_path)
+        new_mid = mido.MidiFile()
+        new_mid.ticks_per_beat = mid.ticks_per_beat
+        
+        for i, track in enumerate(mid.tracks):
+             new_track = mido.MidiTrack()
+             new_track.append(mido.Message('program_change', program=int(program_number), time=0))
+             for msg in track:
+                 if msg.type == 'program_change': continue
+                 new_track.append(msg)
+             new_mid.tracks.append(new_track)
+             
+        new_mid.save(midi_path)
+        print(f"   [MIDI] Set {os.path.basename(midi_path)} to Program {program_number}", flush=True)
+    except Exception as e:
+        print(f"   [!] Failed to set MIDI program: {e}", flush=True)
+
+
 def transcribe_piano(audio_path, midi_path):
     print(f"   > Transcribing PIANO (ByteDance) on {device}...", flush=True)
     if not PianoTranscription:
@@ -183,16 +208,15 @@ def transcribe_and_mix(input_wav, soundfont_path, output_wav, preset=None):
         print(f"   [✓] MIDI saved to: {midi_output}", flush=True)
         print(f"[OUTPUT] Transcription (MIDI)|{midi_output}", flush=True)
 
-        # --- MIDI Post-Processing (Program Change for FluidSynth) ---
         if soundfont_path != 'JSNTH':
-             # Inject Program Change if it's a numeric ID preset
-             # But if preset IS 'piano' string, we need to map to GM? 
-             # For xymix, 'preset' was usually passed as numeric ID for fluidsynth?
-             # User says: "when I choose JSNTH... Strings". 
-             # Main.py: "presets_data[sf] = GM_PRESETS". GM Presets have numeric IDs.
-             # JSNTH Presets have string IDs.
-             # So if sf != JSNTH, preset is likely '48' (Strings).
-             pass 
+             try:
+                # If preset is a numeric ID (0-127), apply it
+                prog_id = int(target_preset)
+                set_midi_program(midi_output, prog_id)
+             except (ValueError, TypeError):
+                # If preset is a string like 'piano', map to GM? 
+                # For now, ignore string presets unless we want to map them.
+                pass 
 
     except Exception as e:
         print(f"   [!] Error during transcription: {e}", flush=True)

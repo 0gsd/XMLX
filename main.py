@@ -89,29 +89,38 @@ def verify_user_token():
 
 # --- SoundFolderFile Data ---
 GM_PRESETS = [
-    {"name": "Grand Piano", "id": 0},
-    {"name": "Bright Piano", "id": 1},
-    {"name": "Electric Piano", "id": 4},
-    {"name": "Honky-tonk", "id": 3},
-    {"name": "Drawbar Organ", "id": 16},
-    {"name": "Percussive Organ", "id": 17},
-    {"name": "Accordion", "id": 21},
-    {"name": "Nylon Guitar", "id": 24},
-    {"name": "Steel Guitar", "id": 25},
-    {"name": "Overdrive Guitar", "id": 29},
-    {"name": "Acoustic Bass", "id": 32},
-    {"name": "Electric Bass", "id": 33},
-    {"name": "Slap Bass", "id": 36},
-    {"name": "Violin", "id": 40},
-    {"name": "Cello", "id": 42},
-    {"name": "Strings Ensemble", "id": 48},
-    {"name": "Trumpet", "id": 56},
-    {"name": "Saxophone", "id": 65},
-    {"name": "Flute", "id": 73},
-    {"name": "Square Lead", "id": 80},
-    {"name": "Sawtooth Lead", "id": 81},
-    {"name": "Synth Pad (New Age)", "id": 88},
-    {"name": "Synth Pad (Warm)", "id": 89},
+    {"id":0,"name":"Acoustic Grand Piano"}, {"id":1,"name":"Bright Acoustic Piano"}, {"id":2,"name":"Electric Grand Piano"}, {"id":3,"name":"Honky-tonk Piano"},
+    {"id":4,"name":"Electric Piano 1"}, {"id":5,"name":"Electric Piano 2"}, {"id":6,"name":"Harpsichord"}, {"id":7,"name":"Clavinet"},
+    {"id":8,"name":"Celesta"}, {"id":9,"name":"Glockenspiel"}, {"id":10,"name":"Music Box"}, {"id":11,"name":"Vibraphone"},
+    {"id":12,"name":"Marimba"}, {"id":13,"name":"Xylophone"}, {"id":14,"name":"Tubular Bells"}, {"id":15,"name":"Dulcimer"},
+    {"id":16,"name":"Drawbar Organ"}, {"id":17,"name":"Percussive Organ"}, {"id":18,"name":"Rock Organ"}, {"id":19,"name":"Church Organ"},
+    {"id":20,"name":"Reed Organ"}, {"id":21,"name":"Accordion"}, {"id":22,"name":"Harmonica"}, {"id":23,"name":"Tango Accordion"},
+    {"id":24,"name":"Acoustic Guitar (nylon)"}, {"id":25,"name":"Acoustic Guitar (steel)"}, {"id":26,"name":"Electric Guitar (jazz)"}, {"id":27,"name":"Electric Guitar (clean)"},
+    {"id":28,"name":"Electric Guitar (muted)"}, {"id":29,"name":"Overdriven Guitar"}, {"id":30,"name":"Distortion Guitar"}, {"id":31,"name":"Guitar harmonics"},
+    {"id":32,"name":"Acoustic Bass"}, {"id":33,"name":"Electric Bass (finger)"}, {"id":34,"name":"Electric Bass (pick)"}, {"id":35,"name":"Fretless Bass"},
+    {"id":36,"name":"Slap Bass 1"}, {"id":37,"name":"Slap Bass 2"}, {"id":38,"name":"Synth Bass 1"}, {"id":39,"name":"Synth Bass 2"},
+    {"id":40,"name":"Violin"}, {"id":41,"name":"Viola"}, {"id":42,"name":"Cello"}, {"id":43,"name":"Contrabass"},
+    {"id":44,"name":"Tremolo Strings"}, {"id":45,"name":"Pizzicato Strings"}, {"id":46,"name":"Orchestral Harp"}, {"id":47,"name":"Timpani"},
+    {"id":48,"name":"String Ensemble 1"}, {"id":49,"name":"String Ensemble 2"}, {"id":50,"name":"SynthStrings 1"}, {"id":51,"name":"SynthStrings 2"},
+    {"id":52,"name":"Choir Aahs"}, {"id":53,"name":"Voice Oohs"}, {"id":54,"name":"Synth Voice"}, {"id":55,"name":"Orchestra Hit"},
+    {"id":56,"name":"Trumpet"}, {"id":57,"name":"Trombone"}, {"id":58,"name":"Tuba"}, {"id":59,"name":"Muted Trumpet"},
+    {"id":60,"name":"French Horn"}, {"id":61,"name":"Brass Section"}, {"id":62,"name":"SynthBrass 1"}, {"id":63,"name":"SynthBrass 2"},
+    {"id":64,"name":"Soprano Sax"}, {"id":65,"name":"Alto Sax"}, {"id":66,"name":"Tenor Sax"}, {"id":67,"name":"Baritone Sax"},
+    {"id":68,"name":"Oboe"}, {"id":69,"name":"English Horn"}, {"id":70,"name":"Bassoon"}, {"id":71,"name":"Clarinet"},
+    {"id":72,"name":"Piccolo"}, {"id":73,"name":"Flute"}, {"id":74,"name":"Recorder"}, {"id":75,"name":"Pan Flute"},
+    {"id":76,"name":"Blown Bottle"}, {"id":77,"name":"Shakuhachi"}, {"id":78,"name":"Whistle"}, {"id":79,"name":"Ocarina"},
+    {"id":80,"name":"Lead 1 (square)"}, {"id":81,"name":"Lead 2 (sawtooth)"}, {"id":82,"name":"Lead 3 (calliope)"}, {"id":83,"name":"Lead 4 (chiff)"},
+    {"id":84,"name":"Lead 5 (charang)"}, {"id":85,"name":"Lead 6 (voice)"}, {"id":86,"name":"Lead 7 (fifths)"}, {"id":87,"name":"Lead 8 (bass + lead)"},
+    {"id":88,"name":"Pad 1 (new age)"}, {"id":89,"name":"Pad 2 (warm)"}, {"id":90,"name":"Pad 3 (polysynth)"}, {"id":91,"name":"Pad 4 (choir)"},
+    {"id":92,"name":"Pad 5 (bowed)"}, {"id":93,"name":"Pad 6 (metallic)"}, {"id":94,"name":"Pad 7 (halo)"}, {"id":95,"name":"Pad 8 (sweep)"},
+    {"id":96,"name":"FX 1 (rain)"}, {"id":97,"name":"FX 2 (soundtrack)"}, {"id":98,"name":"FX 3 (crystal)"}, {"id":99,"name":"FX 4 (atmosphere)"},
+    {"id":100,"name":"FX 5 (brightness)"}, {"id":101,"name":"FX 6 (goblins)"}, {"id":102,"name":"FX 7 (echoes)"}, {"id":103,"name":"FX 8 (sci-fi)"},
+    {"id":104,"name":"Sitar"}, {"id":105,"name":"Banjo"}, {"id":106,"name":"Shamisen"}, {"id":107,"name":"Koto"},
+    {"id":108,"name":"Kalimba"}, {"id":109,"name":"Bag pipe"}, {"id":110,"name":"Fiddle"}, {"id":111,"name":"Shanai"},
+    {"id":112,"name":"Tinkle Bell"}, {"id":113,"name":"Agogo"}, {"id":114,"name":"Steel Drums"}, {"id":115,"name":"Woodblock"},
+    {"id":116,"name":"Taiko Drum"}, {"id":117,"name":"Melodic Tom"}, {"id":118,"name":"Synth Drum"}, {"id":119,"name":"Reverse Cymbal"},
+    {"id":120,"name":"Guitar Fret Noise"}, {"id":121,"name":"Breath Noise"}, {"id":122,"name":"Seashore"}, {"id":123,"name":"Bird Tweet"},
+    {"id":124,"name":"Telephone Ring"}, {"id":125,"name":"Helicopter"}, {"id":126,"name":"Applause"}, {"id":127,"name":"Gunshot"}
 ]
 
 # JSNTH Presets (mapped to pysynth strings)
@@ -407,11 +416,8 @@ def process_tool(tool_type):
     # Soundfont Map
     SF_MAP = {
         'default': 'GeneralUser-GS.sf2',
-        'grand': 'Grandiose.sf2', # Now pointing to the local file
+        'grand': 'Grandiose.sf2', 
         'harpsichord': 'Harpsiose.sf2',
-        'upright': 'BinauralUpright.sf2',
-        'honky': 'HonkyTonk.sf2',
-        'bright': 'YamahaHybrid.sf2' # Placeholder or map to Salamander for now
     }
     
     # Fallback/Safe Resolution
@@ -421,7 +427,8 @@ def process_tool(tool_type):
         soundfont = 'JSNTH' # Special flag passed to scripts
     elif sf_choice in SF_MAP:
         sf_rel_path = SF_MAP[sf_choice]
-        soundfont = os.path.join(BASE_DIR, 'soundfonts', os.path.basename(sf_rel_path))
+        # FIX: Files are in BASE_DIR, not 'soundfonts' subdir
+        soundfont = os.path.join(BASE_DIR, os.path.basename(sf_rel_path))
     elif sf_choice != 'default' and sf_choice.endswith('.sf2'):
         # Allow passing full filename if in scanned list (from UI)
         # Security: Allow only if basename exists in directory
@@ -471,8 +478,8 @@ def process_tool(tool_type):
         script = 'xymix.py'
         out_name = f"{base_name}_xymix.wav"
         
-        # soundfont variable is already resolved by the common logic above (lines 405-431)
-        # which handles 'JSNTH' or SF2 paths based on request.form.get('soundfont')
+        # Force default SoundFont (ignore user selection)
+        soundfont = app.config['SOUNDFONT_PATH']
         
         preset = request.form.get('preset')
         if preset:

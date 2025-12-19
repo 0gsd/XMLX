@@ -1,5 +1,11 @@
 # Changelog
 
+## v4.74 (2025-12-19)
+- Fixed P2MIX paths and removed broken soundfonts
+
+## v4.73 (2025-12-19)
+- Refactored Xymix UI to use single 128-inst selector and fixed MIDI PC injection
+
 ## v4.72 (2025-12-19)
 - Key rotations
 

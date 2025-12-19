@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XMlX.app v4.72 | ML audio tools for critical humor applications</title>
+    <title>XMlX.app v4.74 | ML audio tools for critical humor applications</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
@@ -112,12 +112,7 @@
             /* display: none; Removed - Active now */
         }
 
-        color: var(--sidebar-bg);
-        /* Match background to look like "holes" */
-        z-index: 2;
-        pointer-events: none;
-        /* Let clicks pass through */
-        }
+
 
         .nav-list {
             padding: 20px;
@@ -527,7 +522,7 @@
                 style="line-height: 7px; font-size: 7px; font-weight: bold; white-space: pre-wrap;">{{ ascii_art|safe }}
             </div>
             <!-- Version Number (Targeted by update_version.py) -->
-            <div style="font-family: monospace; font-size: 10px; color: #777; margin-top: 8px;">v4.72</div>
+            <div style="font-family: monospace; font-size: 10px; color: #777; margin-top: 8px;">v4.74</div>
         </div>
 
         <div class="nav-list">
@@ -647,9 +642,6 @@
                                 <option value="default" selected>Default (GeneralUser)</option>
                                 <option value="grand">Grand Piano / Grandiose</option>
                                 <option value="harpsichord">Harpsichord / Harpsiose</option>
-                                <option value="upright">Upright Piano</option>
-                                <option value="honky">Honky Tonk</option>
-                                <option value="bright">Bright / Pop</option>
                             </select>
                         </div>
                     </div>
@@ -712,17 +704,8 @@
 
                     <!-- XYMIX Options -->
                     <div id="optionsXymix" style="display:none; margin-bottom: 2rem; text-align: center;">
-                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--purple);">SOUND
-                            ENGINE</label>
-                        <div style="display:flex; justify-content:center; margin-bottom:15px;">
-                            <select id="xymix_folder" onchange="updateXymixFileOptions()"
-                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
-                                <!-- Populated by JS -->
-                            </select>
-                        </div>
-                        <label
-                            style="display:block; margin-bottom:10px; font-weight:bold; color:var(--acid);">INSTRUMENT /
-                            PRESET</label>
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--acid);">SELECT
+                            INSTRUMENT</label>
                         <div style="display:flex; justify-content:center;">
                             <select id="xymix_file"
                                 style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
@@ -1201,13 +1184,8 @@
 
             // Capture params for XYMIX
             if (currentMode === 'xymix') {
-                const folder = document.getElementById('xymix_folder').value;
                 const file = document.getElementById('xymix_file').value;
-
-                // If JSNTH, soundfont="JSNTH", preset=file
-                // If SF2, soundfont=folder, preset=file (mapped ID)
-
-                formData.append('soundfont', folder);
+                // Folder is always forced to default by backend now
                 formData.append('preset', file);
             }
 
@@ -1365,37 +1343,36 @@
 
         // --- XYMIX UI Logic (Global Scope) ---
         function initXymixUI() {
-            const folderSel = document.getElementById('xymix_folder');
-            if (!folderSel) return folderSel.innerHTML = '';
-            const keys = Object.keys(PRESETS_DATA).sort();
-
-            keys.forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k;
-                if (k === 'JSNTH') opt.textContent = "JSNTH (Internal Synth)";
-                else opt.textContent = k;
-                folderSel.appendChild(opt);
-            });
-
-            if (keys.length > 0) folderSel.value = keys[0];
-            updateXymixFileOptions();
-        }
-
-        function updateXymixFileOptions() {
-            const folderSel = document.getElementById('xymix_folder');
             const fileSel = document.getElementById('xymix_file');
-            const selectedFolder = folderSel.value;
+            if (!fileSel) return;
 
-            fileSel.innerHTML = '';
+            // Hardcode to GeneralUser-GS.sf2 (Matches Backend Force)
+            const target = 'GeneralUser-GS.sf2';
+            const instruments = PRESETS_DATA[target];
 
-            const instruments = PRESETS_DATA[selectedFolder];
+            // Fallback if that key missing (e.g. filename mismatch)
+            // Just grab the first key that isn't JSNTH if GeneralUser-GS.sf2 isn't found?
+            // But main.py scans specifically.
+
             if (instruments) {
                 instruments.forEach(inst => {
                     const opt = document.createElement('option');
                     opt.value = inst.id;
-                    opt.textContent = inst.name;
+                    opt.textContent = `${inst.id}: ${inst.name}`; // Show ID for clarity
                     fileSel.appendChild(opt);
                 });
+            } else {
+                // Fallback: try all keys
+                const keys = Object.keys(PRESETS_DATA);
+                if (keys.length > 0) {
+                    const acts = PRESETS_DATA[keys[0]];
+                    acts.forEach(inst => {
+                        const opt = document.createElement('option');
+                        opt.value = inst.id;
+                        opt.textContent = inst.name;
+                        fileSel.appendChild(opt);
+                    });
+                }
             }
         }
         window.addEventListener('DOMContentLoaded', initXymixUI);
