@@ -640,3 +640,20 @@
 - **Issue 2 (Audio)**: `15010` stems all sounded like Piano because MIDI files lacked Program Changes.
 - **Fix 2**: Implemented `set_midi_program` in `15010.py` to inject correct Program Numbers (Piano:0, Guitar:25, Bass:33) for generated stems.
 - **Env**: initialized git repo (v4.71), flattened structure, and removed Anaconda from `.zshrc` to clean shell environment.
+
+## Dec 19: v4.75 (CMCMT Encore Refactor)
+**Goal**: Transform `cmcmt.py` output from "boring monophonic" to "engaging & structured".
+- **Change**: Implemented a 9-part variation structure (A-B-A-B-C-B-B-C-A) with distinct thematic definitions (Energetic, Melodic, Intense) passed to the LLM.
+- **Change**: Replaced fixed 32-bar grid stitching (which caused huge silence gaps if generation was short) with **"Compact Stitching"**, which aligns subsequent parts to the *actual* end of the previous MIDI data (plus 1 bar padding).
+- **Result**: Compositions are now ~3 minutes long with no awkward silence gaps.
+
+## Dec 19: v4.76 (XMIOX Silent Logging)
+**Goal**: Fix "File not found" errors when `xmiox` stem separation fails.
+- **Issue**: When `xmiox.py` failed to synthesize stems (e.g. due to missing soundfont or API error), it correctly generated a silent fallback WAV but **failed to print the `[OUTPUT]` log line**.
+- **Consequence**: The frontend saw no output path, creating no download link, leaving the user with a "File not found" error when trying to download via history.
+- **Fix**: Added explicit logic to print the `[OUTPUT]` path even in the fallback silent block.
+
+## Dec 19: v4.77 (API Key Hardcoding Fix)
+**Goal**: Fix persistent "API Key Expired" (HTTP 400) errors in CMCMT and Tugue.
+- **Issue**: Despite the user providing a valid `GEMINI_API_KEY` in `env_vars_pro.yaml`, `cmcmt.py` and `tugue.py` were ignoring it because they contained an **Old Hardcoded API Key** from previous development versions.
+- **Fix**: Patched both scripts to strictly use `os.environ.get("GEMINI_API_KEY")`, ensuring the deployed environment variable is respected.

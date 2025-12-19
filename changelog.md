@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.78 (2025-12-19)
+- Fixed CMCMT stitching part detection to match A_Part naming
+
 ## v4.77 (2025-12-19)
 - Fixed hardcoded expired API keys in CMCMT and Tugue
 

@@ -125,11 +125,10 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
             return False
 
         # 1. Gather Parts
-        parts = [f for f in os.listdir(run_dir) if f.startswith('Part_') and f.endswith('.mid')]
-        def get_part_num(name):
-            try: return int(name.split('_')[1].split('.')[0])
-            except: return 999
-        parts.sort(key=get_part_num)
+        # 1. Gather Parts
+        # Fix v4.78: Filenames are 'A_Part...', 'B_Part...' so we sort alphabetically.
+        parts = [f for f in os.listdir(run_dir) if '_Part_' in f and f.endswith('.mid') and not f.startswith('Final')]
+        parts.sort() # A_Part, B_Part, C_Part... preserves A-I sequence perfectly
 
         if not parts:
             print("   [!] No parts found to stitch! Using fallback.", flush=True)
