@@ -1,0 +1,161 @@
+
+@app.route('/process_tool', methods=['POST'])
+def process_tool():
+    # Strict Check
+    if not is_authorized() and os.environ.get('TIER') == 'PRO':
+         return jsonify({'error': 'Unauthorized. Please login.'}), 403
+         
+    tier = os.environ.get('TIER', 'PRO')
+    tool_type = request.form.get('tool_type')
+    
+    # Common Args
+    filename = "input.wav"
+    input_path = ""
+    
+    # Handle File Upload dependent on tool type
+    if tool_type in ['p2mix', 'xymix', 'xmiox', 'fina1', 'fimai', 'p20co']:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        filename = secure_filename(file.filename)
+        input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(input_path)
+    elif tool_type == 'p10no':
+         # P10NO Exception: No input file needed
+         filename = "p10no_gen.wav" 
+         input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+         # We do NOT error if missing
+    else:
+        return jsonify({'error': 'No file provided'}), 400
+
+    base_name = os.path.splitext(filename)[0]
+    
+    # Soundfont Selector Logic
+    sf_choice = request.form.get('soundfont', 'default')
+    
+    # Soundfont Map
+    SF_MAP = {
+        'default': 'GeneralUser-GS.sf2',
+        'grand': 'Grandiose.sf2', 
+        'harpsichord': 'Harpsiose.sf2',
+        'upright': 'BinauralUpright.sf2',
+        'honky': 'HonkyTonk.sf2',
+        'bright': 'YamahaHybrid.sf2' 
+    }
+    
+    # Fallback/Safe Resolution
+    soundfont = app.config['SOUNDFONT_PATH'] # Default
+    
+    if sf_choice == 'JSNTH':
+        soundfont = 'JSNTH' 
+    elif sf_choice in SF_MAP:
+        sf_rel_path = SF_MAP[sf_choice]
+        # Resolve path - check both root and soundfonts dir
+        p1 = os.path.join(BASE_DIR, os.path.basename(sf_rel_path))
+        p2 = os.path.join(BASE_DIR, 'soundfonts', os.path.basename(sf_rel_path))
+        if os.path.exists(p2):
+            soundfont = p2
+        elif os.path.exists(p1):
+            soundfont = p1
+        else:
+            # Fallback to absolute if mapped logic fails
+            soundfont = os.path.join(BASE_DIR, 'soundfonts', os.path.basename(sf_rel_path))
+
+    elif sf_choice != 'default' and sf_choice.endswith('.sf2'):
+        # Allow passing full filename if in scanned list (from UI)
+        p1 = os.path.join(BASE_DIR, os.path.basename(sf_choice))
+        p2 = os.path.join(BASE_DIR, 'soundfonts', os.path.basename(sf_choice))
+        if os.path.exists(p1):
+             soundfont = p1
+        elif os.path.exists(p2):
+             soundfont = p2
+
+    extra_args = []
+
+    if tool_type == 'p2mix':
+        script = 'p2mix1.py'
+        out_name = f"{base_name}_p2mix.wav"
+        # Pass soundfont as positional argument via stream_process
+        extra_args = []
+        
+    elif tool_type == 'xymix':
+        script = 'xymix.py'
+        out_name = f"{base_name}_xymix.wav"
+        # Pass soundfont as positional
+        extra_args = []
+        # Pass preset
+        preset_id = request.form.get('preset')
+        if preset_id:
+             extra_args.extend(['--preset', str(preset_id)])
+
+    elif tool_type == '15010':
+        script = '15010.py'
+        out_name = f"{base_name}_15010.wav"
+        fav = request.form.get('favorite')
+        if fav:
+            extra_args = ['--favorite', fav]
+    elif tool_type == 'xmiox':
+        script = 'xmiox.py'
+        out_name = f"{base_name}_xmiox.wav"
+    elif tool_type == 'fina1':
+        script = 'fina1.py'
+        out_name = f"{base_name}_fina1.wav"
+        lufs = request.form.get('lufs')
+        style = request.form.get('style', 'OTHER') # Default to OTHER
+        
+        if lufs:
+            extra_args.extend(['--lufs', str(lufs)])
+        if style:
+            extra_args.extend(['--style', str(style)])
+            
+    elif tool_type == 'fimai':
+        script = 'fimai.py'
+        out_name = f"{base_name}_fimai.wav"
+        lufs = request.form.get('finalLufs') 
+        
+        extra_args = []
+        if lufs:
+            extra_args.extend(['--lufs', str(lufs)])
+            
+    elif tool_type == 'p10no':
+        script = 'p10np.py'
+        # Unique ID for concurrent runs
+        import time
+        ts = int(time.time())
+        out_name = f"p10no_{ts}.wav" 
+        # Using XML as output usually, but p10np writes .xml based on output arg.
+        
+        # extra_args for p10no/p2mix etc usually DONT include --soundfont if passed positionally
+        extra_args = [] 
+        # We need prompts?
+        prompt = request.form.get('prompt', 'Beautiful piano improvisation')
+        extra_args.append('--prompt')
+        extra_args.append(prompt)
+        
+    elif tool_type == 'p20co':
+        script = 'p20co.py'
+        import time
+        ts = int(time.time())
+        out_name = f"p20co_{ts}.wav"
+        
+        extra_args = []
+        prompt = request.form.get('prompt', 'Complex creation')
+        extra_args.append('--prompt')
+        extra_args.append(prompt)
+        
+    else:
+        return jsonify({'error': 'Invalid tool type'}), 400
+
+    output_path = os.path.join(app.config['WAV_F_FOLDER'], out_name)
+
+    return Response(
+        stream_process(script, input_path, output_path, soundfont, extra_args), 
+        mimetype='text/event-stream',
+        headers={
+            'X-Accel-Buffering': 'no',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        }
+    )

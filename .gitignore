@@ -1,0 +1,85 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project Specific (Large Media / Temp)
+uploads/
+processed/
+wavF/
+tmp_output/
+temp_demucs*/
+temp_fugue_runs*/
+midiO/
+*.wav
+*.mp3
+*.sf2
+!GeneralUser-GS.sf2
+!Grandiose.sf2
+!Harpsiose.sf2
+!Bread*.sf2
+
+# System
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Cloud
+.gcloudignore
+
+# Large/Source Files (Added for GitHub hygiene)
+*.pth
+*.psd
+test_suite/
+inf/

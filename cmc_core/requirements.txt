@@ -1,0 +1,6 @@
+google-generativeai
+midiutil
+PyYAML
+colorama
+ruamel.yaml
+mido

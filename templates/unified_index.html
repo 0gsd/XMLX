@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMlX.app v4.71 | ML audio tools for critical humor applications</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        :root {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --sidebar-bg: #000000;
+            --piano: #ffffff;
+            --green: #03dac6;
+            --purple: #bb86fc;
+            --orange: #ffb74d;
+            /* NV5lK Color */
+            --blue: #536DFE;
+            /* 15010 Color */
+            --text: #e0e0e0;
+            --gold: #FFD700;
+            /* FINA1 Color */
+            --ice: #84F0FF;
+            /* FIMAI Color */
+            --royal: #651FFF;
+            --teal: #009688;
+            --teal: #009688;
+            /* P10NO Color */
+            --crimson: #DC143C;
+            /* P20CO Color */
+            --crimson: #DC143C;
+            --puce: #CC8899;
+            --maroon: #800000;
+        }
+
+        /* RESTORED LAYOUT STYLES */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .logo-container {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            overflow: hidden;
+            /* Prevent garbling from wrap */
+        }
+
+        .ascii-art {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            /* Quotes matter for some browsers */
+            font-size: 10px;
+            line-height: 10px;
+            letter-spacing: 0px;
+            /* Critical for alignment */
+            white-space: pre;
+            margin: 0;
+            display: inline-block;
+            text-align: left;
+        }
+
+        /* Grid wrapper for perfect stacking */
+        .logo-grid {
+            display: grid;
+            place-items: center;
+            /* Helper, though grid-area does the work */
+        }
+
+        /* Both layers share this to stack */
+        .ascii-layer {
+            grid-area: 1 / 1;
+            user-select: none;
+            /* Prevent double selection weirdness */
+        }
+
+        /* Layer 1: Rainbow Gradient */
+        /* Layer 1: Rainbow Gradient */
+        .ascii-layer-rainbow {
+            background: linear-gradient(to right, #00FFFF, #800080, #FF69B4, #FFFF00);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* Fallback color MUST be transparent for clip to work on many browsers */
+            color: transparent;
+            z-index: 1;
+        }
+
+        /* Layer 2: Black Mask (The "Cutout") */
+        /* DISABLED: Size Mismatch (126w vs 42w). Uncomment when assets match. */
+        .ascii-mask {
+            color: var(--sidebar-bg);
+            z-index: 2;
+            pointer-events: none;
+            /* display: none; Removed - Active now */
+        }
+
+        color: var(--sidebar-bg);
+        /* Match background to look like "holes" */
+        z-index: 2;
+        pointer-events: none;
+        /* Let clicks pass through */
+        }
+
+        .nav-list {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            opacity: 0.7;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+
+        .nav-desc {
+            display: none;
+            /* Accordion: hidden by default */
+            font-size: 0.85em;
+            color: #888;
+            line-height: 1.3;
+            margin-top: 4px;
+        }
+
+        /* Show desc when active */
+        .nav-item.active .nav-desc {
+            display: block;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg);
+            /* Ensure dark bg */
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+            border: 1px solid #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .locked {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+        }
+
+        .available {
+            opacity: 0.9;
+        }
+
+        /* Active Colors */
+        .nav-item[data-mode="p2mix"].active .nav-title {
+            color: var(--piano);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-item[data-mode="xymix"].active .nav-title {
+            color: var(--green);
+            text-shadow: 0 0 10px rgba(3, 218, 198, 0.3);
+        }
+
+        .nav-item[data-mode="xvmix"].active .nav-title {
+            color: var(--purple);
+            text-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+        }
+
+        .nav-item[data-mode="nu5ic"].active .nav-title {
+            color: var(--orange);
+            text-shadow: 0 0 10px rgba(255, 183, 77, 0.3);
+        }
+
+        .nav-item[data-mode="15010"].active .nav-title {
+            color: var(--blue);
+            text-shadow: 0 0 10px rgba(83, 109, 254, 0.3);
+        }
+
+        .nav-item[data-mode="fina1"].active .nav-title {
+            color: var(--ice);
+            text-shadow: 0 0 10px rgba(132, 240, 255, 0.3);
+        }
+
+        .nav-item[data-mode="fimai"].active .nav-title {
+            color: var(--royal);
+            text-shadow: 0 0 10px rgba(98, 0, 234, 0.3);
+        }
+
+        .nav-item[data-mode="p10no"].active .nav-title {
+            color: var(--teal);
+            text-shadow: 0 0 10px rgba(0, 150, 136, 0.3);
+        }
+
+        .nav-item[data-mode="cmcmf"].active .nav-title {
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .nav-item[data-mode="tugue"].active .nav-title {
+            color: #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+        }
+
+        /* Fugue Orange */
+        .nav-item[data-mode="fugue"].active .nav-title {
+            color: #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+        }
+
+        .nav-item[data-mode="snata"].active .nav-title {
+            color: var(--puce);
+            text-shadow: 0 0 10px rgba(204, 136, 153, 0.3);
+        }
+
+        .nav-item[data-mode="xmiox"].active .nav-title {
+            color: #FF00FF;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        /* Magenta/Clown */
+
+
+        /* Card Borders match active mode */
+        /* ... existing ... */
+
+        /* Fugue Orange Border (Pro fix) */
+        .card.mode-fugue {
+            border-color: #FFA500;
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.2);
+        }
+
+        /* SNATA Puce/Maroon Border */
+        .card.mode-snata {
+            border: 3px solid transparent;
+            background-image: linear-gradient(var(--surface), var(--surface)),
+                linear-gradient(135deg, var(--maroon), var(--puce), var(--maroon));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 0 30px rgba(128, 0, 0, 0.3);
+        }
+
+        /* ... IN NAV LIST ... */
+
+
+
+        .upload-box {
+            border: 2px dashed #444;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #666;
+        }
+
+        .upload-box.selected {
+            border-color: #888;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        #fileName {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        button {
+            width: auto;
+            min-width: 200px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            /* Sharper corners for pro feel */
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            opacity: 0.9;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Area */
+        .progress-area {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .bar-bg {
+            background: #333;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 1rem;
+        }
+
+        .log {
+            background: #000;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #0f0;
+            /* Matrix green for logs */
+            height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            /* Prevent horizontal spill */
+            white-space: pre-wrap;
+            /* Wrap long lines */
+            word-wrap: break-word;
+            /* Break long words */
+            border-radius: 4px;
+            border: 1px solid #333;
+            max-width: 100%;
+        }
+
+        /* Disk Link Style */
+        .disk-link {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .disk-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .disk-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .fname {
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Large XML Button Container */
+        .download-xml-container {
+            margin-top: 20px;
+            text-align: left;
+            /* Aligned left as requested */
+            padding-left: 0;
+        }
+
+        .xml-dl-link {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .xml-dl-link:hover {
+            transform: scale(1.02);
+        }
+
+        .xml-dl-link img {
+            height: 140px;
+            /* Large */
+            margin-bottom: 5px;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .xml-dl-link span {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.6em;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-top: 5px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 800px) {
+            body {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #333;
+            }
+
+            .nav-list {
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 1rem;
+                padding: 10px;
+            }
+
+            .nav-item {
+                min-width: 120px;
+                text-align: center;
+            }
+
+            .nav-desc {
+                display: none;
+            }
+
+            /* Hide desc on mobile nav to save space */
+            .main-content {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        .ascii-gradient {
+            background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" style="display:flex; flex-direction:column;">
+        <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
+            <!-- Single Layer Gradient Logo -->
+            <div class="ascii-art ascii-gradient"
+                style="line-height: 7px; font-size: 7px; font-weight: bold; white-space: pre-wrap;">{{ ascii_art|safe }}
+            </div>
+            <!-- Version Number (Targeted by update_version.py) -->
+            <div style="font-family: monospace; font-size: 10px; color: #777; margin-top: 8px;">v4.71</div>
+        </div>
+
+        <div class="nav-list">
+            <!-- TIER: FREE FEATURES (Top) -->
+            <div class="nav-item" data-mode="xymix" onclick="setMode('xymix')"
+                title="Add MIDI everything to your vocal-melody-free instrumental song audio.">
+                <div class="nav-title">MUSIC.XMlX</div>
+                <div class="nav-desc">Add MIDI everything to your vocal-melody-free instrumental song audio.</div>
+            </div>
+
+            <div class="nav-item" data-mode="15010" onclick="setMode('15010')"
+                title="Isolate your most important instrument and get a MIDI-merged solo.">
+                <div class="nav-title">15010.XMlX</div>
+                <div class="nav-desc">Isolate your most important instrument and get a MIDI-merged solo.</div>
+            </div>
+            <div class="nav-item" data-mode="xmiox" onclick="setMode('xmiox')"
+                title="Stare into the clown's dressing room mirror.">
+                <div class="nav-title">XMIOX.XMlX</div>
+                <div class="nav-desc">Stare into the clown's dressing room mirror.</div>
+            </div>
+
+            <!-- TIER: PRO FEATURES (Visible but Locked in Free) -->
+
+            <!-- PIANO.XMlX -->
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="p2mix"
+                onclick="handleNavClick('p2mix')" title="Transform boring piano into magic.">
+                <div class="nav-title">PIANO.XMlX <span
+                        style="background:white; color:black; font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">Transform boring piano into magic.</div>
+            </div>
+
+            <!-- CMCMF.XMlX -->
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="cmcmf"
+                onclick="handleNavClick('cmcmf')" title="A thing to make you go 'Encore!'">
+                <div class="nav-title">CMCMF.XMlX <span
+                        style="background:var(--gold); color:black; font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">A thing to make you go 'Encore!'</div>
+            </div>
+
+            <!-- FINA1.XMlX (Deprecated v4.49)
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="fina1"
+                onclick="{% if tier == 'PRO' %}setMode('fina1'){% else %}checkProAccess(){% endif %}"
+                title="Make your song sound better.">
+                <div class="nav-title">FINA1.XMlX <span
+                        style="background:var(--ice); color:black; font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">Make your song sound better.</div>
+            </div>
+            -->
+
+            <!-- FIMAI.XMlX (Deprecated v4.49)
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="fimai"
+                onclick="{% if tier == 'PRO' %}setMode('fimai'){% else %}checkProAccess(){% endif %}"
+                title="Apply neu(t)ral stemming and mastering to your song.">
+                <div class="nav-title">FIMAI.XMlX <span
+                        style="background:var(--royal); color:white; font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">Apply neu(t)ral stemming and mastering to your song.</div>
+            </div>
+            -->
+
+            <!-- FUGUE.XMlX -->
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="fugue"
+                onclick="handleNavClick('fugue')" title="Lose yourself in the music.">
+                <div class="nav-title">FUGUE.XMlX <span
+                        style="background:#FFA500; color:black; font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">Lose yourself in the music.</div>
+            </div>
+
+            <!-- SNATA.XMlX -->
+            <div class="nav-item {% if tier != 'PRO' %}locked{% else %}available{% endif %}" data-mode="snata"
+                onclick="handleNavClick('snata')" title="Classical methods, classic results.">
+                <div class="nav-title">SNATA.XMlX <span
+                        style="background:var(--maroon); color:var(--puce); font-size:0.4em; padding:2px 4px; border-radius:4px; vertical-align:middle; margin-left:5px;">PRO</span>
+                </div>
+                <div class="nav-desc">Classical methods, classic results.</div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+            <div
+                style="width:100%; max-width:600px; margin-bottom:1rem; font-size:0.75rem; color:#666; text-align:center; line-height:1.4;">
+                <strong>LEGAL DISCLAIMER</strong>: XMlX.app is a transformation tool intended for <strong>parody,
+                    educational, and critical use</strong>. Files are temporary and <strong>automatically
+                    deleted</strong>
+                (eventually). We do not retain ownership. Only upload songs you are permitted to use.
+            </div>
+            <div class="card mode-xy" id="mainCard">
+                <!-- <div class="desc" id="modeDesc" style="display:none; text-align:center; margin-bottom:1rem; opacity:0.6;"></div> -->
+
+                <div id="uploadContainer">
+                    <input type="file" id="fileInput" accept=".wav,.mp3,.aiff,.aif,.mp4,.mpeg,.mov,.m4a"
+                        style="display:none">
+                    <div class="upload-box" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <p id="fileName">DRAG AUDIO HERE OR CLICK TO UPLOAD</p>
+                        <p style="font-size:0.8rem; opacity:0.5; margin-top:10px;">Supports WAV, MP3, MP4, AIFF</p>
+                    </div>
+
+                    <!-- P2MIX / P10NO Options (Piano Selector) -->
+                    <div id="optionsP2mix" style="display:none; margin-bottom: 2rem; text-align: center;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--purple);">PIANO
+                            STYLE</label>
+                        <div style="display:flex; justify-content:center;">
+                            <select id="soundfontSelect" name="soundfont"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
+                                <option value="default" selected>Default (GeneralUser)</option>
+                                <option value="grand">Grand Piano / Grandiose</option>
+                                <option value="harpsichord">Harpsichord / Harpsiose</option>
+                                <option value="upright">Upright Piano</option>
+                                <option value="honky">Honky Tonk</option>
+                                <option value="bright">Bright / Pop</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 15010 Options -->
+                    <div id="options15010" style="display:none; margin-bottom: 2rem; text-align: center;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--blue);">CHOOSE
+                            YOUR
+                            FAVORITE</label>
+                        <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;">
+                            <label style="cursor:pointer;"><input type="radio" name="fav" value="piano"> Piano</label>
+                            <label style="cursor:pointer;"><input type="radio" name="fav" value="guitar"> Guitar</label>
+                            <label style="cursor:pointer;"><input type="radio" name="fav" value="bass"> Bass</label>
+                            <label style="cursor:pointer;"><input type="radio" name="fav" value="other" checked> I Love
+                                Them All! (Surprise Me)</label>
+                        </div>
+                    </div>
+
+                    <!-- FINA1 Options -->
+                    <div id="optionsFina1" style="display:none; margin-bottom: 2rem; text-align: center;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--ice);">FINAL WAV
+                            LUFS</label>
+                        <div
+                            style="display:flex; justify-content:center; gap:20px; align-items:center; margin-bottom: 20px;">
+                            <input type="number" id="finalLufs" name="finalLufs" min="-24" max="-2" step="0.01"
+                                value="-14.00"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:100px; text-align:center;">
+                            <span style="color:#666; font-size:0.8rem;">(Range: -24 to -2)</span>
+                        </div>
+
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--gold);">MUSICAL
+                            STYLE</label>
+                        <div style="display:flex; justify-content:center;">
+                            <select id="musicalStyle" name="style"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
+                                <option value="OTHER" selected>OTHER (Default)</option>
+                                <option value="ROCK_INDIE">ROCK / INDIE</option>
+                                <option value="POP">POP</option>
+                                <option value="ACOUSTIC">ACOUSTIC</option>
+                                <option value="HIPHOP_GRIME">HIPHOP / GRIME</option>
+                                <option value="ELECTRONIC">ELECTRONIC</option>
+                                <option value="REGGAE_DUB">REGGAE / DUB</option>
+                                <option value="ORCHESTRAL">ORCHESTRAL</option>
+                                <option value="METAL">METAL</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- FIMAI Options (Same as FINA1 but no Style) -->
+                    <div id="optionsFimai" style="display:none; margin-bottom: 2rem; text-align: center;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--gold);">FINAL WAV
+                            LUFS</label>
+                        <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+                            <input type="number" id="finalLufsFimai" name="finalLufs" min="-24" max="-2" step="0.01"
+                                value="-14.00"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:100px; text-align:center;">
+                            <span style="color:#666; font-size:0.8rem;">(Range: -24 to -2)</span>
+                        </div>
+                    </div>
+
+                    <!-- XYMIX Options -->
+                    <div id="optionsXymix" style="display:none; margin-bottom: 2rem; text-align: center;">
+                        <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--purple);">SOUND
+                            ENGINE</label>
+                        <div style="display:flex; justify-content:center; margin-bottom:15px;">
+                            <select id="xymix_folder" onchange="updateXymixFileOptions()"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <label
+                            style="display:block; margin-bottom:10px; font-weight:bold; color:var(--acid);">INSTRUMENT /
+                            PRESET</label>
+                        <div style="display:flex; justify-content:center;">
+                            <select id="xymix_file"
+                                style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CMCMF Options -->
+                <div id="optionsCmcmf" style="display:none; margin-bottom: 2rem; text-align: center;">
+                    <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--gold);">SELECT
+                        SOLOIST</label>
+                    <div style="display:flex; justify-content:center;">
+                        <select id="cmcmf_instrument" name="instrument"
+                            style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; text-align:center; appearance:none; cursor:pointer;">
+                            <!-- Standard GM Instruments + Some fun ones -->
+                            <option value="0">Acoustic Grand Piano</option>
+                            <option value="1">Bright Acoustic Piano</option>
+                            <option value="4">Electric Piano 1</option>
+                            <option value="6">Harpsichord</option>
+                            <option value="11">Vibraphone</option>
+                            <option value="19">Church Organ</option>
+                            <option value="21">Accordion</option>
+                            <option value="24">Acoustic Guitar (Nylon)</option>
+                            <option value="26">Electric Guitar (Jazz)</option>
+                            <option value="29">Overdriven Guitar</option>
+                            <option value="40">Violin</option>
+                            <option value="41">Viola</option>
+                            <option value="42">Cello</option>
+                            <option value="43">Contrabass</option>
+                            <option value="46">Orchestral Harp</option>
+                            <option value="52">Choir Aahs</option>
+                            <option value="56">Trumpet</option>
+                            <option value="60">French Horn</option>
+                            <option value="65">Alto Sax</option>
+                            <option value="68">Oboe</option>
+                            <option value="71">Clarinet</option>
+                            <option value="73">Flute</option>
+                            <option value="75">Pan Flute</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- FUGUE Options -->
+                <div id="optionsFugue" style="display:none; margin-bottom: 2rem; text-align: center;">
+                    <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--royal);">FUGUE
+                        SUBJECT
+                        (PROMPT)</label>
+                    <div style="display:flex; justify-content:center; margin-bottom:15px;">
+                        <textarea id="promptFugue"
+                            style="padding:10px; border-radius:4px; border:1px solid #444; background:#222; color:white; font-family:monospace; width:250px; height:80px; text-align:center; appearance:none; cursor:text;"
+                            placeholder="A strict mathematical fugue in D Minor..."></textarea>
+                    </div>
+                    <label
+                        style="display:block; margin-bottom:10px; font-weight:bold; color:var(--royal);">STRUCTURE</label>
+                    <div style="font-size: 0.9em; color: #aaa; margin-top: 5px;">
+                        Auto-generates 3 voices (Soprano, Alto, Bass) across 3 sections (Exposition, Development,
+                        Recap). Instruments selected automatically.
+                    </div>
+                </div>
+
+                <!-- SNATA Options -->
+                <div id="optionsSnata" style="display:none; margin-bottom: 2rem; text-align: center;">
+                    <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--puce);">SONATA
+                        PROMPT (OPTIONAL)</label>
+                    <div style="display:flex; justify-content:center; margin-bottom:15px;">
+                        <input type="text" id="snataPrompt" placeholder="e.g. A romantic sonata in moonlight"
+                            style="width: 250px; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: white; text-align:center;">
+                    </div>
+                </div>
+            </div>
+
+            <button id="startBtn" onclick="startProcess()" style="background:#FF00FF; color:#ffffff;">INITIALIZE
+                MUSIC.XMlX</button>
+
+            <button id="resetBtn" onclick="resetProcess()"
+                style="margin-top:10px; background:#333; color:#aaa; font-size:0.8rem; padding:8px; display:none;">RESET
+                / NEW UPLOAD</button>
+
+            <div class="progress-area" id="progressArea">
+                <div class="bar-bg">
+                    <div class="bar-fill" id="progressBar" style="background: white;"></div>
+                </div>
+                <div id="statusText" class="status">Ready</div>
+
+                <!-- Results Area: Flex Container -->
+                <div id="resultsContainer" style="display:flex; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+                    <!-- Left: XML Button -->
+                    <div id="xmlResultArea" style="flex:0 0 auto; order:1;"></div>
+
+                    <!-- Right: Files Grid -->
+                    <div id="filesResultArea"
+                        style="flex:1; display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:10px; order:2;">
+                    </div>
+                </div>
+                <!-- Log Output (Moved outside flex container) -->
+                <div class="log" id="logOutput" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inject Presets Data from Backend
+        const PRESETS_DATA = {{ presets_data | tojson | safe }};
+        // Tier Info
+        const USER_TIER = "{{ tier }}";
+
+        function handleNavClick(mode) {
+            if (USER_TIER === 'PRO') {
+                setMode(mode);
+            } else {
+                checkProAccess();
+            }
+        }
+
+        let currentMode = 'xymix';
+
+        // Explicit initialization on load
+        window.onload = function () {
+            setMode('xymix', true);
+        };
+
+        const modes = {
+            'p2mix': { color: '#000000', text: '#ffffff', btn: "INITIALIZE PIANO.XMlX" }, // White on Black
+            'xymix': { color: '#03dac6', text: '#000000', btn: "INITIALIZE MUSIC.XMLX" },
+            'xvmix': { color: '#bb86fc', text: '#000000', btn: "INITIALIZE MVSIC.XMlX" },
+            'nu5ic': { color: '#ffb74d', text: '#000000', btn: "INITIALIZE NV5lK.XMlX" },
+            '15010': { color: '#536DFE', text: '#ffffff', btn: "INITIALIZE 15010.XMlX" },
+            'xmiox': { color: '#e040fb', text: '#ffffff', btn: "INITIALIZE XMIOX.XMlX" },
+            'fina1': { color: '#84F0FF', text: '#000000', btn: "INITIALIZE FINA1.XMlX" },
+            'fimai': { color: '#6200ea', text: '#ffffff', btn: "INITIALIZE FIMAI.XMlX" },
+            'p10no': { color: '#009688', text: '#ffffff', btn: "INITIALIZE P10NO.XMlX" },
+            'p20co': { color: '#DC143C', text: '#ffffff', btn: "INITIALIZE P20CO.XMlX" },
+            'cmcmf': { color: '#FFD700', text: '#000000', btn: "INITIALIZE CMCMF.XMlX" },
+            'fugue': { color: '#FF8C00', text: '#ffffff', btn: "INITIALIZE FUGUE.XMlX" }, // Dark Orange
+            'snata': { color: '#CC8899', text: '#800000', btn: "COMPOSE SONATA.XMlX" } // Puce/Maroon
+        };
+
+        let activeProcessId = 0;
+        let isProcessing = false;
+
+        function setMode(mode, force = false) {
+            // Guard: Check if process is running
+            if (!force) {
+                if (isProcessing) {
+                    if (!confirm("Process is running. Changing tools will lose progress. Continue?")) {
+                        return; // Cancel switch
+                    }
+                }
+            }
+
+            // Invalidate any running process loop
+            activeProcessId++;
+
+            currentMode = mode;
+            const conf = modes[mode];
+
+            // Update Nav Active State
+            document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+            // Start of p2mix might process tool change to fix active state if missed?
+            const nav = document.querySelector(`.nav-item[data-mode="${mode}"]`);
+            if (nav) nav.classList.add('active');
+
+            // Update Card Styling
+            const card = document.getElementById('mainCard');
+            let suffix = mode.substring(0, 2);
+            if (mode === 'fina1') suffix = 'fina1';
+            if (mode === 'p20co') suffix = 'p20'; // Ensure P20CO gets its own class
+            if (mode === 'fugue') suffix = 'fugu'; // New Fugue class
+            card.className = `card mode-${suffix}`;
+
+            // Update Button
+            const btn = document.getElementById('startBtn');
+            btn.textContent = conf.btn;
+            btn.style.background = conf.color;
+            btn.style.color = conf.text;
+
+            // Show/Hide Options
+            // Show/Hide Options
+            // Hide all
+            document.getElementById('uploadContainer').style.display = 'block'; // Default to show
+            document.getElementById('optionsP2mix').style.display = 'none';
+            document.getElementById('options15010').style.display = 'none';
+            document.getElementById('optionsFina1').style.display = 'none';
+            document.getElementById('optionsFimai').style.display = 'none';
+            document.getElementById('optionsXymix').style.display = 'none';
+            document.getElementById('optionsCmcmf').style.display = 'none';
+            document.getElementById('optionsFugue').style.display = 'none'; // New Fugue options
+            document.getElementById('optionsSnata').style.display = 'none';
+
+            // Show relevant
+            if (currentMode === 'p2mix') {
+                document.getElementById('optionsP2mix').style.display = 'block';
+            } else if (currentMode === '15010') {
+                document.getElementById('options15010').style.display = 'block';
+            } else if (currentMode === 'fina1') {
+                document.getElementById('optionsFina1').style.display = 'block';
+            } else if (currentMode === 'fimai') {
+                document.getElementById('optionsFimai').style.display = 'block';
+            } else if (currentMode === 'xymix') {
+                document.getElementById('uploadContainer').style.display = 'block'; // Xymix requires input
+                document.getElementById('optionsXymix').style.display = 'block';
+            } else if (currentMode === 'cmcmf') {
+                document.getElementById('uploadContainer').style.display = 'none'; // CMCMF is generative
+                document.getElementById('optionsCmcmf').style.display = 'block';
+            } else if (currentMode === 'fugue') { // New Fugue mode
+                document.getElementById('uploadContainer').style.display = 'none'; // Fugue is generative
+                document.getElementById('optionsFugue').style.display = 'block';
+            } else if (currentMode === 'snata') {
+                document.getElementById('uploadContainer').style.display = 'none';
+                document.getElementById('optionsSnata').style.display = 'block';
+            } else if (currentMode === 'p10no' || currentMode === 'p20co') {
+                document.getElementById('optionsP2mix').style.display = 'block'; // Share piano options
+            }
+
+            checkUploadState(); // Re-validate
+
+            document.getElementById('progressArea').style.display = 'none';
+
+            // The logic below is now handled by checkUploadState and the hide/show options above
+            // if (mode !== 'p10no' && mode !== 'p20co') {
+            //     document.getElementById('uploadContainer').style.display = 'block';
+            //     document.getElementById('dropZone').style.display = 'block'; // Ensure dropzone visible
+            // } else {
+            //     document.getElementById('uploadContainer').style.display = 'block'; // Container needed for options
+            //     document.getElementById('dropZone').style.display = 'none'; // Hide just the dropzone
+            // }
+
+            // document.getElementById('startBtn').disabled = (mode !== 'p10no' && mode !== 'p20co'); // Auto-enable for p10no/p20co (no file needed)
+            if (currentMode !== 'p10no' && currentMode !== 'p20co' && currentMode !== 'cmcmf' && currentMode !== 'fugue' && currentMode !== 'snata') { // Added fugue, snata
+                document.getElementById('fileInput').value = '';
+                document.getElementById('fileName').textContent = "DRAG AUDIO HERE OR CLICK TO UPLOAD";
+                document.getElementById('dropZone').classList.remove('selected');
+                document.getElementById('dropZone').style.display = 'block';
+            } else {
+                // For generative/internal modes, hide dropzone
+                document.getElementById('dropZone').style.display = 'none';
+            }
+
+
+            // Clear results
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer) {
+                document.getElementById('xmlResultArea').innerHTML = '';
+                document.getElementById('filesResultArea').innerHTML = '';
+            }
+        }
+
+        // Reset Handler for Button
+        function resetProcess() {
+            if (confirm("Start over? Current results will be lost.")) {
+                setMode(currentMode, true);
+            }
+        }
+
+        async function checkProAccess() {
+            // 1. Derive Pro URL (Remove '-free' from hostname)
+            // Assumes: uncanny-mixer-free... -> uncanny-mixer...
+            // Or: xmlx.app -> pro.xmlx.app (Future proofing logic?)
+            // For now, let's use the cloud run pattern logic
+            let targetUrl = "";
+            const host = window.location.hostname;
+
+            if (host.includes('run.app') && host.includes('-free')) {
+                targetUrl = "https://" + host.replace('-free', '');
+            } else if (host === 'xmlx.app' || host === 'free.xmlx.app') {
+                targetUrl = "https://pro.xmlx.app";
+            } else {
+                // Fallback: If we are not on pro.xmlx.app, try pro.xmlx.app?
+                // Safe default for custom domains
+                targetUrl = "https://pro.xmlx.app";
+            }
+
+
+            const btn = document.querySelector('.nav-item.pro-link');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="nav-title" style="color:var(--crimson);">Checking...</div>';
+
+            try {
+                // 2. Probe
+                // We interpret ANY failure (403, Network Error via CORS) as "Not Allowed"
+                const resp = await fetch(targetUrl + '/api/ping', {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+
+                if (resp.ok) {
+                    // Success! Redirect
+                    window.location.href = targetUrl;
+                } else {
+                    throw new Error("Auth Check Failed");
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("User not on allowlist.\n\nE-mail automated lign.dev majordomo domo@lign.dev for consideration of addition to the allowlist.\n\nPlease include reasons for PRO tools access and how you plan to be gentle on our external API quotas :)");
+            } finally {
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Upload UI Logic
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                document.getElementById('fileName').textContent = fileInput.files[0].name;
+                document.getElementById('dropZone').classList.add('selected');
+                // document.getElementById('startBtn').disabled = false; // Enable start button - now handled by checkUploadState
+                checkUploadState();
+            }
+        });
+
+        // Drag and Drop support
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        dropZone.addEventListener('dragover', () => dropZone.classList.add('selected'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('selected'));
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length) {
+                fileInput.files = files;
+                document.getElementById('fileName').textContent = files[0].name;
+                dropZone.classList.add('selected');
+                // document.getElementById('startBtn').disabled = false; // Enable start button - now handled by checkUploadState
+                checkUploadState();
+            }
+        }
+
+        function checkUploadState() {
+            // Logic to enable/disable start button based on requirements
+            const startBtn = document.getElementById('startBtn');
+            const fileInput = document.getElementById('fileInput');
+            const hasFile = fileInput.files.length > 0;
+
+            // Start is enabled if:
+            // 1. Mode is xymix (no upload needed, internal)
+            // 2. Mode is cmcmf (generative, no upload)
+            // 3. Mode is p10no (generative, no upload)
+            // 4. Mode is p20co (generative, no upload)
+            // 5. Mode is fugue (generative, no upload)
+            // 6. Mode is snata (generative, no upload)
+            // 7. Mode requires file AND hasFile
+
+            if (currentMode === 'cmcmf' || currentMode === 'p10no' || currentMode === 'p20co' || currentMode === 'fugue' || currentMode === 'snata') {
+                startBtn.disabled = false;
+                startBtn.style.opacity = 1;
+            } else {
+                if (hasFile) {
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = 1;
+                } else {
+                    startBtn.disabled = true;
+                    startBtn.style.opacity = 0.5;
+                }
+            }
+        }
+
+        async function startProcess() {
+            if (currentMode !== 'p10no' && currentMode !== 'p20co' && currentMode !== 'xymix' && currentMode !== 'cmcmf' && currentMode !== 'fugue' && currentMode !== 'snata' && !fileInput.files.length) return alert("Please select a file."); // Added fugue, snata
+
+            const btn = document.getElementById('startBtn');
+            const progressArea = document.getElementById('progressArea');
+            const logOutput = document.getElementById('logOutput');
+            const bar = document.getElementById('progressBar');
+            const status = document.getElementById('statusText');
+
+            btn.disabled = true;
+            isProcessing = true;
+            progressArea.style.display = 'block';
+            if (currentMode === 'p10no') status.textContent = "Initiating P10NO...";
+            else if (currentMode === 'p20co') status.textContent = "Initiating P20CO...";
+            else if (currentMode === 'xymix') status.textContent = "Initiating XYMIX...";
+            else if (currentMode === 'cmcmf') status.textContent = "Initiating CMCMF...";
+            else if (currentMode === 'fugue') status.textContent = "Initiating FUGUE..."; // Added fugue
+            else if (currentMode === 'snata') status.textContent = "Initiating SNATA...";
+            else status.textContent = "Initiating Upload...";
+            logOutput.innerHTML = '';
+            // scroll log to bottom
+
+            bar.style.width = '0%';
+            // Clear new result areas
+            document.getElementById('xmlResultArea').innerHTML = '';
+            document.getElementById('filesResultArea').innerHTML = '';
+
+            // Capture current process ID (MOVED UP to fix ReferenceError)
+            const thisProcessId = ++activeProcessId;
+
+            let filename = "composition.wav"; // Default for p10no
+            if (currentMode === 'p20co') filename = "convolved.wav";
+            if (currentMode === 'cmcmf') filename = "solo.mid"; // Default for cmcmf
+            if (currentMode === 'fugue') filename = "fugue.mid"; // Default for fugue
+            if (currentMode === 'snata') filename = "sonata.mid"; // Default for snata
+
+            if (currentMode !== 'p10no' && currentMode !== 'p20co' && currentMode !== 'cmcmf' && currentMode !== 'fugue' && currentMode !== 'snata') { // Added fugue, snata
+                const file = fileInput.files[0];
+                filename = file.name;
+                const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+                // --- Chunked Upload Loop ---
+                for (let i = 0; i < totalChunks; i++) {
+                    // Cancellation check
+                    if (thisProcessId !== activeProcessId) {
+                        console.log("Process aborted by navigation.");
+                        isProcessing = false;
+                        return;
+                    }
+
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const chunk = file.slice(start, end);
+
+                    const formData = new FormData();
+                    formData.append('file', chunk);
+                    formData.append('filename', file.name);
+                    formData.append('chunkIndex', i);
+                    formData.append('totalChunks', totalChunks);
+
+                    status.textContent = `Uploading Chunk ${i + 1}/${totalChunks}...`;
+
+                    try {
+                        const resp = await fetch('/api/upload_chunk', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!resp.ok) throw new Error("Upload Failed");
+
+                        // Upload Progress (0-30%)
+                        const percent = ((i + 1) / totalChunks) * 100;
+                        bar.style.width = (percent * 0.3) + '%';
+
+                    } catch (e) {
+                        if (thisProcessId !== activeProcessId) return; // Ignore errors if cancelled
+                        alert(`Upload Failed at chunk ${i + 1}: ` + e);
+                        btn.disabled = false;
+                        isProcessing = false;
+                        return;
+                    }
+                }
+                status.textContent = "Upload Complete. Processing...";
+            } else {
+                // P10NO/P20CO/XYMIX/CMCMF/FUGUE Immediate Progress
+                bar.style.width = '10%';
+                if (currentMode === 'p10no') status.textContent = "Processing P10NO...";
+                else if (currentMode === 'p20co') status.textContent = "Processing P20CO...";
+                else if (currentMode === 'xymix') status.textContent = "Processing XYMIX...";
+                else if (currentMode === 'cmcmf') status.textContent = "Processing CMCMF...";
+                else if (currentMode === 'fugue') status.textContent = "Processing FUGUE..."; // Added fugue
+                else if (currentMode === 'snata') status.textContent = "Processing SNATA...";
+            }
+
+            // (thisProcessId declaration removed from here)
+
+            // Check cancellation before starting stream
+            if (thisProcessId !== activeProcessId) return;
+
+            const formData = new FormData();
+            formData.append('filename', filename);
+            formData.append('tool', currentMode);
+
+            // Capture fav for 15010
+            if (currentMode === '15010') {
+                const fav = document.querySelector('input[name="fav"]:checked').value;
+                formData.append('fav', fav);
+            }
+
+            // Capture params for XYMIX
+            if (currentMode === 'xymix') {
+                const folder = document.getElementById('xymix_folder').value;
+                const file = document.getElementById('xymix_file').value;
+
+                // If JSNTH, soundfont="JSNTH", preset=file
+                // If SF2, soundfont=folder, preset=file (mapped ID)
+
+                formData.append('soundfont', folder);
+                formData.append('preset', file);
+            }
+
+            // Capture Soundfont for P10NO / P2MIX
+            if (currentMode === 'p10no' || currentMode === 'p2mix') {
+                const sf = document.getElementById('soundfontSelect').value;
+                formData.append('soundfont', sf);
+
+                // Optional Prompt for P10NO (future proofing, using default for now or add input later)
+                if (currentMode === 'p10no') {
+                    // formData.append('prompt', "..."); 
+                }
+            }
+
+            // Capture LUFS for FINA1
+            if (currentMode === 'fina1') {
+                const lufsInput = document.getElementById('finalLufs');
+                const val = parseFloat(lufsInput.value);
+                if (isNaN(val) || val < -24 || val > -2) {
+                    alert("Invalid LUFS value. Must be between -24 and -2.");
+                    btn.disabled = false;
+                    return;
+                }
+                formData.append('lufs', val);
+
+                // Capture Style
+                const styleSelect = document.getElementById('musicalStyle');
+                if (styleSelect) {
+                    formData.append('style', styleSelect.value);
+                }
+            }
+
+            // Capture Instrument for CMCMF
+            if (currentMode === 'cmcmf') {
+                const instrumentSelect = document.getElementById('cmcmf_instrument');
+                formData.append('instrument', instrumentSelect.value);
+            } else if (currentMode === 'fugue') { // Added fugue
+                formData.append('prompt', document.getElementById('promptFugue').value);
+            } else if (currentMode === 'snata') {
+                formData.append('prompt', document.getElementById('snataPrompt').value);
+            }
+
+            // Stream Output
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `/api/process/${currentMode}`, true);
+
+            let lastResponseLen = 0;
+
+            xhr.onprogress = function () {
+                if (thisProcessId !== activeProcessId) {
+                    xhr.abort();
+                    return;
+                }
+                const response = xhr.responseText;
+                const chunk = response.substring(lastResponseLen);
+                lastResponseLen = response.length;
+
+                const lines = chunk.split('\n\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            if (data.log) {
+                                logOutput.innerHTML += `<div>> ${data.log}</div>`;
+                                logOutput.scrollTop = logOutput.scrollHeight;
+                            }
+                            if (data.step) status.textContent = data.step;
+
+                            // Hide Upload Box on Start
+                            document.getElementById('uploadContainer').style.display = 'none';
+
+                            // --- XYMIX UI Logic ---
+
+                            if (data.done) {
+                                bar.style.width = '100%';
+                                status.textContent = "PROCESS COMPLETE";
+                                btn.disabled = false;
+                                isProcessing = false;
+                            } else if (data.error) {
+                                status.textContent = "ERROR";
+                                logOutput.innerHTML += `<div style="color:red">ERROR: ${data.error}</div>`;
+                                btn.disabled = false;
+                                isProcessing = false;
+                                // Show upload box again on error so they can retry?
+                                document.getElementById('uploadContainer').style.display = 'block';
+                            }
+
+                            // Parse Link
+                            if (data.link) {
+                                const isXML = data.link.label.toUpperCase().includes('XML');
+
+                                if (isXML) {
+                                    // Singleton: Remove existing XML btn if present
+                                    const existing = document.querySelector('.download-xml-container');
+                                    if (existing) existing.remove();
+
+                                    const container = document.createElement('div');
+                                    container.className = 'download-xml-container';
+                                    container.innerHTML = `
+                            <a href="${data.link.url}" target="_blank" class="xml-dl-link">
+                                <img src="/static/dl.png" alt="GET XMLX">
+                                <span>GET XMLX</span>
+                            </a>
+                        `;
+                                    const xmlArea = document.getElementById('xmlResultArea');
+                                    xmlArea.appendChild(container);
+                                } else {
+                                    // Disk Icon Link -> Add to Grid
+                                    const linkDiv = document.createElement('div');
+                                    linkDiv.className = 'disk-link';
+                                    // SVG Disk Icon
+                                    const diskSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 9H15V3H9V9H5L12 16L19 9ZM5 18V20H19V18H5Z" fill="currentColor"/>
+                        </svg>`;
+
+                                    linkDiv.innerHTML = `
+            <a href="${data.link.url}" target="_blank" class="disk-btn" style="color:${modes[currentMode].color}">${diskSvg}</a>
+                            <span class="fname">${data.link.label}</span>
+                        `;
+                                    const filesArea = document.getElementById('filesResultArea');
+                                    filesArea.appendChild(linkDiv);
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Parse Error:", e);
+                        }
+                    }
+                }
+            };
+
+            xhr.onload = function () {
+                if (xhr.status !== 200) {
+                    status.textContent = "Request Failed";
+                    logOutput.innerHTML += `<div style="color:red">HTTP Error: ${xhr.status}</div>`;
+                    btn.disabled = false;
+                    isProcessing = false;
+                }
+            };
+
+            xhr.onerror = function () {
+                status.textContent = "Connection Error";
+                btn.disabled = false;
+                isProcessing = false;
+            };
+            xhr.send(formData);
+        }
+    </script>
+
+
+    <script>
+        // ... (Existing Scripts) ...
+
+
+        // ...
+
+        // --- XYMIX UI Logic (Global Scope) ---
+        function initXymixUI() {
+            const folderSel = document.getElementById('xymix_folder');
+            if (!folderSel) return folderSel.innerHTML = '';
+            const keys = Object.keys(PRESETS_DATA).sort();
+
+            keys.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                if (k === 'JSNTH') opt.textContent = "JSNTH (Internal Synth)";
+                else opt.textContent = k;
+                folderSel.appendChild(opt);
+            });
+
+            if (keys.length > 0) folderSel.value = keys[0];
+            updateXymixFileOptions();
+        }
+
+        function updateXymixFileOptions() {
+            const folderSel = document.getElementById('xymix_folder');
+            const fileSel = document.getElementById('xymix_file');
+            const selectedFolder = folderSel.value;
+
+            fileSel.innerHTML = '';
+
+            const instruments = PRESETS_DATA[selectedFolder];
+            if (instruments) {
+                instruments.forEach(inst => {
+                    const opt = document.createElement('option');
+                    opt.value = inst.id;
+                    opt.textContent = inst.name;
+                    fileSel.appendChild(opt);
+                });
+            }
+        }
+        window.addEventListener('DOMContentLoaded', initXymixUI);
+    </script>
+</body>
+
+</html>
