@@ -39,29 +39,46 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
     with open(os.path.join(run_dir, "config.yaml"), 'w') as f:
         yaml.dump(config_data, f)
         
-    # 3. Song Settings (Encore)
+    # 3. Song Settings (Encore - 9 Part Variation)
     try: inst_prog = int(instrument_id)
     except: inst_prog = 0
     
     inst_desc = "Piano" if inst_prog == 0 else "Instrument"
     
+    # Define Themes (A, B, C)
+    themes_map = {
+        "A": {"label": "Theme A", "role": "Main", "description": f"Primary theme. Energetic and distinct. Prompt: {prompt}"},
+        "B": {"label": "Theme B", "role": "Bridge", "description": "Contrasting theme. Slower, more melodic and expressive."},
+        "C": {"label": "Theme C", "role": "Climax", "description": "Intense variation. Complex rhythm and higher dynamics."}
+    }
+    
+    # Pattern: 1-2-1-2-3-2-2-3-1  -> A-B-A-B-C-B-B-C-A
+    pattern = ["A", "B", "A", "B", "C", "B", "B", "C", "A"]
+    
+    theme_defs = []
+    for idx, key in enumerate(pattern):
+        base = themes_map[key]
+        theme_defs.append({
+            "label": f"{base['label']} (Var {idx+1})",
+            "role": base['role'],
+            "description": f"{base['description']} Variation {idx+1}.",
+            "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]
+        })
+
     song_settings = {
         "song_name": f"{base_name}",
-        "tempo": "Andante" if inst_desc == "Piano" else "Adagio",
-        "scale": "Minor", "genre": "Classical", "length": 32,
+        "tempo": "Allegro", 
+        "scale": "Minor", "genre": "Classical", 
+        "length": 8, # ~20 seconds at 100-120 BPM
         "instruments": [ {"program_num": inst_prog, "role": "Lead", "name": "Soloist"} ],
-        "theme_definitions": [
-            {"label": "Overture", "role": "Intro", "description": f"Grand solo opening. Prompt: {prompt}", "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]},
-            {"label": "Chorus", "role": "Main", "description": "Main thematic development. Virtuoso.", "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]},
-            {"label": "Journey", "role": "Bridge", "description": "Experimental development.", "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]},
-            {"label": "Coda", "role": "Outro", "description": "Triumphant flourish.", "instruments": [{"program_num": inst_prog, "role": "Lead", "name": "Soloist"}]}
-        ]
+        "theme_definitions": theme_defs
     }
+    
     with open(os.path.join(run_dir, "song_settings.json"), 'w') as f:
         json.dump(song_settings, f, indent=2)
 
     # 4. Invoke CMC (Subprocess)
-    print("\n[1/3] Composing Encore...", flush=True)
+    print("\n[1/3] Composing Encore (9 Variations)...", flush=True)
     CMC_CORE_DIR = os.path.join(os.path.dirname(__file__), "cmc_core")
     script_path = os.path.join(CMC_CORE_DIR, "song_generator.py")
     env = os.environ.copy()
@@ -89,29 +106,15 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
     print("\n[2/3] Collecting MIDI...", flush=True)
     candidates = [f for f in os.listdir(run_dir) if f.endswith(".mid")]
     
-    # Priority: Final
-    final_candidates = [f for f in candidates if f.lower().startswith('final')]
-    if final_candidates:
-        base_midi = os.path.join(run_dir, final_candidates[0])
-    else:
-        # Fallback to combined or Stitch (Lazy stitching: just pick main part for now if CMC fails combine)
-        # Actually CMC 'Final' usually works if 4 parts generated.
-        base_midi = os.path.join(run_dir, sorted(candidates)[0]) if candidates else None
-
-    if not base_midi:
+    if not candidates:
         print("   [!] No MIDI generated. Aborting.", flush=True)
         return
 
-    try: os.chmod(base_midi, 0o644)
-    except: pass
-    
-    print(f"   [CMCMT] Selected MIDI: {os.path.basename(base_midi)}", flush=True)
-
-    # 5b. Stitching (The Fix for Silence)
-    print("\n[2.5/3] Stitching Parts (Robust)...", flush=True)
+    # 5b. Stitching (The Fix for Silence: Compact Stitching)
+    print("\n[2.5/3] Stitching Parts (Compact)...", flush=True)
     final_midi_path = os.path.join(output_dir, f"{base_name}_final.mid")
     
-    def stitch_midis_properly(run_dir, output_path, bars_per_part=32):
+    def stitch_midis_compact(run_dir, output_path):
         print(f"   [CMCMT] Stitching parts in {run_dir}...", flush=True)
         try:
             import mido
@@ -128,45 +131,55 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
         parts.sort(key=get_part_num)
 
         if not parts:
-            print("   [!] No parts found to stitch!", flush=True)
+            print("   [!] No parts found to stitch! Using fallback.", flush=True)
             return False
             
         print(f"   [CMCMT] Found {len(parts)} parts: {parts}", flush=True)
 
         try:
             # 2. Setup Master based on first part
-            first_part_path = os.path.join(run_dir, parts[0])
-            first_mid = MidiFile(first_part_path)
-            # Safe access to ticks_per_beat
-            tpb = first_mid.tracks[0].ticks_per_beat if hasattr(first_mid.tracks[0], 'ticks_per_beat') else first_mid.ticks_per_beat
+            first_path = os.path.join(run_dir, parts[0])
+            first_mid = MidiFile(first_path)
+            tpb = first_mid.ticks_per_beat
             
             master_midi = MidiFile(ticks_per_beat=tpb)
-            # Init empty tracks based on first part structure
+            # Init empty tracks based on first part
             for _ in first_mid.tracks:
                 master_midi.tracks.append(MidiTrack())
 
-            # Calculate Grid
+            # Grid Calc
             beats_per_bar = 4
             for msg in first_mid.tracks[0]:
                 if msg.type == 'time_signature':
                     beats_per_bar = msg.numerator
                     break
-            
             ticks_per_bar = tpb * beats_per_bar
-            part_length_ticks = bars_per_part * ticks_per_bar
             
             current_start_tick = 0
 
             # 3. Stitch Loop
             for p_filename in parts:
                 p_path = os.path.join(run_dir, p_filename)
-                try:
-                    mid = MidiFile(p_path)
-                except:
-                    print(f"      [!] Failed to read {p_filename}, skipping.")
-                    continue
+                try: mid = MidiFile(p_path)
+                except: continue
 
-                # Append each track
+                # Find length of this part (max tick)
+                part_max_tick = 0
+                for track in mid.tracks:
+                    inputs_ticks = 0
+                    for msg in track:
+                        inputs_ticks += msg.time
+                    if inputs_ticks > part_max_tick:
+                        part_max_tick = inputs_ticks
+                
+                # Align to next bar
+                import math
+                bars = math.ceil(part_max_tick / ticks_per_bar)
+                # Ensure at least 1 bar if empty?
+                if bars < 1: bars = 1
+                aligned_length = bars * ticks_per_bar
+                
+                # Append tracks
                 for t_idx, track in enumerate(mid.tracks):
                     if t_idx >= len(master_midi.tracks):
                         master_midi.tracks.append(MidiTrack())
@@ -174,19 +187,20 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
                     master_trk = master_midi.tracks[t_idx]
                     master_end_tick = sum(m.time for m in master_trk)
                     
-                    # Gap calc
+                    # Gap to current start
                     gap = current_start_tick - master_end_tick
-                    if gap < 0: gap = 0 # Overlap protection
+                    if gap < 0: gap = 0
                     
-                    first_event = True
+                    first = True
                     for msg in track:
                         msg = msg.copy()
-                        if first_event:
+                        if first:
                             msg.time += gap
-                            first_event = False
+                            first = False
                         master_trk.append(msg)
                 
-                current_start_tick += part_length_ticks
+                # Advance cursor (Sequential)
+                current_start_tick += aligned_length
             
             master_midi.save(output_path)
             print(f"   [CMCMT] Stitched {len(parts)} parts to {output_path}", flush=True)
@@ -199,16 +213,21 @@ def pipeline_cmcmt(prompt, instrument_id, output_wav_path, soundfont_path):
             return False
 
     # Attempt Stitch
-    if stitch_midis_properly(run_dir, final_midi_path, bars_per_part=32):
+    if stitch_midis_compact(run_dir, final_midi_path):
         base_midi = final_midi_path
     else:
-        print("   [!] Stitching failed. Fallback to base MIDI.", flush=True)
+        # Fallback to whatever 'final' file exists or the first part
+        final_candidates = [f for f in candidates if f.lower().startswith('final')]
+        if final_candidates:
+             base_midi = os.path.join(run_dir, final_candidates[0])
+        else:
+             base_midi = os.path.join(run_dir, sorted(candidates)[0])
+        print(f"   [!] Stitching failed or no parts. Using {base_midi}", flush=True)
         shutil.copyfile(base_midi, final_midi_path)
         
     try: os.chmod(final_midi_path, 0o644)
     except: pass
     
-    # Update base_midi to point to the new evolved/remerged file
     base_midi = final_midi_path
 
     # 6. Render & Sanitize

@@ -1,5 +1,8 @@
 # Changelog
 
+## v4.75 (2025-12-19)
+- Refactored CMCMT to 9-part structure and fixed silence
+
 ## v4.74 (2025-12-19)
 - Fixed P2MIX paths and removed broken soundfonts
 
